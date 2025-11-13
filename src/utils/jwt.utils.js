@@ -9,7 +9,7 @@ export function generateToken({id, username, role}) {
 
         const option = {
             algorithm: 'HS512',
-            expiresIn: '2min',
+            expiresIn: '1h',
             issuer: process.env.JWT_ISSUER,
             audience: process.env.JWT_AUDIENCE
         }
