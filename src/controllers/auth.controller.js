@@ -42,7 +42,7 @@ const AuthController = {
 
         const hashedPassword = await argon2.hash(password);
 
-        const user = {
+        const userToAdd = {
             username: username,
             email: email,
             role: role,
@@ -51,11 +51,18 @@ const AuthController = {
         };
         nextId++;
 
-        users.push(user);
+        users.push(userToAdd);
 
-        const token = await generateToken(user);
+        const token = await generateToken(userToAdd);
+
+        const userToSend = {
+            id: userToAdd.id,
+            username: userToAdd.username,
+            email: userToAdd.email,
+            role: userToAdd.role,
+        }
         res.status(200);
-        res.json({token,user});
+        res.json({token,user: userToSend});
 
     },
     login: async (req, res) => {
@@ -63,27 +70,31 @@ const AuthController = {
         console.log(req);
         
         
-        const user = users.find(user => user.email === email);
+        const userFind = users.find(user => user.email === email);
 
-        if (!user) {
+        if (!userFind) {
             res.status(400);
             // en pratique, on n'indiquera que "l'email ou le password est incorrect"
             res.json({error: "Pas d'utilisateur trouvé avec cet email"});
             return;
         }
 
-        if (! await argon2.verify(user.pwd, password)){
+        if (! await argon2.verify(userFind.pwd, password)){
             res.status(400);
             // en pratique, on n'indiquera que "l'email ou le password est incorrect"
             res.json({error: "Le mot de passe est incorrect"});
             return;
         }
 
-        const token = await generateToken(user);
+        const token = await generateToken(userFind);
         res.status(200);
 
-        const userToSend = { ...user };
-        delete userToSend.pwd;
+         const userToSend = {
+            id: userFind.id,
+            username: userFind.username,
+            email: userFind.email,
+            role: userFind.role,
+        }
 
         res.json({token,user: userToSend});
     },
