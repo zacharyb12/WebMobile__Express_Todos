@@ -13,6 +13,7 @@ authRouter.route('/register')
 authRouter.route('/updatePassword')
     .put(authorizeMiddleware(), AuthController.updatePassword);
 
+    // creer une route user et un controller user pour updateUser et getUser
 authRouter.route('/updateUser/:id')
     .put(authorizeMiddleware(), AuthController.updateUser);
 

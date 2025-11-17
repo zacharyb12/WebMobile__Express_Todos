@@ -1,5 +1,6 @@
 import argon2 from "argon2";
 import { generateToken } from "../utils/jwt.utils.js";
+import userService from "../services/userService.js";
 
 const users = [
     {
@@ -33,7 +34,7 @@ const AuthController = {
             return;
         }
 
-        const userExist = users.find(user => user.email === email);
+        const userExist = await userService.getUserByEmail(email);
         if (userExist) {
             res.status(400);
             res.json({error: "Un utilisateur existe déjà avec cet email"});
@@ -51,7 +52,7 @@ const AuthController = {
         };
         nextId++;
 
-        users.push(userToAdd);
+        await userService.createUser(username, email, hashedPassword);
 
         const token = await generateToken(userToAdd);
 
@@ -66,11 +67,9 @@ const AuthController = {
 
     },
     login: async (req, res) => {
-        const { password, email } = req.body;
-        console.log(req);
+        const { password, email } = req.body;        
         
-        
-        const userFind = users.find(user => user.email === email);
+        const userFind = await userService.getUserByEmail(email);
 
         if (!userFind) {
             res.status(400);
@@ -98,24 +97,28 @@ const AuthController = {
 
         res.json({token,user: userToSend});
     },
+    
     updatePassword: async (req, res) => {
         const { id, newPassword } = req.body;
 
-        const user = users.find(u => u.id === id);
+        const user = await userService.getUserById(id);
         if (!user) {
             return res.status(404).json({ error: "Utilisateur introuvable" });
         }
 
         const newPwd = await argon2.hash(newPassword);
-        user.pwd = newPwd;
+        await userService.updateUser(id, { pwd: newPwd });
 
         res.status(200)
         res.json({ message: "Mot de passe mis à jour avec succès" });
     },
-    getUser: (req, res) => {
+
+    // creer une route user et un controller user pour updateUser et getUser
+
+    getUser: async (req, res) => {
         const { id } = req.params;
 
-        const user = users.find(u => u.id === parseInt(id));
+        const user = await userService.getUserById(parseInt(id));
         if (!user) {
             return res.status(404).json({ error: "Utilisateur introuvable" });
         }
@@ -126,11 +129,11 @@ const AuthController = {
         res.status(200);
         res.json({ user: userToSend });
     },
-    updateUser: (req, res) => {
+    updateUser: async (req, res) => {
         const { id } = req.params;
         const { username, email } = req.body;
 
-        const user = users.find(u => u.id === parseInt(id));
+        const user = await userService.getUserById(parseInt(id));
         if (!user) {
             return res.status(404).json({ error: "Utilisateur introuvable" });
         }
@@ -138,11 +141,11 @@ const AuthController = {
         if (username) user.username = username;
         if (email) user.email = email;
 
-        const userToSend = { ...user };
-        delete userToSend.pwd;
+        const updatedUser = await userService.updateUser(parseInt(id), { username, email });
+        delete updatedUser.pwd;
 
         res.status(200);
-        res.json({ user: userToSend });
+        res.json({ user: updatedUser });
     }
 };
 
