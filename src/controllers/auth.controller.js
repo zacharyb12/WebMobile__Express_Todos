@@ -60,6 +60,8 @@ const AuthController = {
     },
     login: async (req, res) => {
         const { password, email } = req.body;
+        console.log(req);
+        
         
         const user = users.find(user => user.email === email);
 
@@ -97,7 +99,40 @@ const AuthController = {
         user.pwd = newPwd;
 
         res.status(200)
-        res.json({ message: "Mot de passe mis à jour avec succès" });},
+        res.json({ message: "Mot de passe mis à jour avec succès" });
+    },
+    getUser: (req, res) => {
+        const { id } = req.params;
+
+        const user = users.find(u => u.id === parseInt(id));
+        if (!user) {
+            return res.status(404).json({ error: "Utilisateur introuvable" });
+        }
+
+        const userToSend = { ...user };
+        delete userToSend.pwd;
+
+        res.status(200);
+        res.json({ user: userToSend });
+    },
+    updateUser: (req, res) => {
+        const { id } = req.params;
+        const { username, email } = req.body;
+
+        const user = users.find(u => u.id === parseInt(id));
+        if (!user) {
+            return res.status(404).json({ error: "Utilisateur introuvable" });
+        }
+
+        if (username) user.username = username;
+        if (email) user.email = email;
+
+        const userToSend = { ...user };
+        delete userToSend.pwd;
+
+        res.status(200);
+        res.json({ user: userToSend });
+    }
 };
 
 export default AuthController;

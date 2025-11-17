@@ -28,7 +28,8 @@ let nextId = todos.length + 1;
 
 const TodoController = {
     getTodos: async (req, res) => {
-        const userId = parseInt(req.params.id, 10);
+        const userId = parseInt(req.params.id,10);
+        
         const userTodos = todos.filter(t => t.userId === userId);
         res.status(200);
         res.json(userTodos);

@@ -13,4 +13,10 @@ authRouter.route('/register')
 authRouter.route('/updatePassword')
     .put(authorizeMiddleware(), AuthController.updatePassword);
 
+authRouter.route('/updateUser/:id')
+    .put(authorizeMiddleware(), AuthController.updateUser);
+
+authRouter.route('/user/:id')
+    .get(authorizeMiddleware(), AuthController.getUser);
+
 export default authRouter;
